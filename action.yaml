@@ -1,0 +1,45 @@
+name: opschain change
+description: run an opschain change
+inputs:
+  opschain_apiBaseUrl:
+    description: opschain api base URL
+    required: true
+  opschain_username:
+    description: opschain username
+    required: true
+  opschain_password:
+    description: opschain password
+    required: true
+  opschain_project:
+    description: opschain project
+    required: true
+  opschain_environment:
+    description: opschain environment
+    required: true
+  opschain_action:
+    description: opschain action
+    required: true
+  opschain_metadata_file:
+    description: opschain metadata file
+    required: true
+  opschain_requestTimeout:
+    description: opschain request timeout
+    default: '60000'
+    required: true
+  opschain_action_metadata:
+    description: opschain action metadata
+    default: ''
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Deploy
+      env:
+        opschain_apiBaseUrl: ${{ inputs.opschain_apiBaseUrl }}
+        opschain_username: ${{ inputs.opschain_username }}
+        opschain_password: ${{ inputs.opschain_password }}
+        opschain_requestTimeout: ${{ inputs.opschain_requestTimeout }}
+      run: |-
+        echo "{ \"github_workflow\": \"${GITHUB_WORKFLOW}\", \"github_repository\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\", \"github_actor\":\"${GITHUB_ACTOR}\", \"github_run_id\":\"${GITHUB_RUN_ID}\", \"workflow_run_url\":\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\", ${{inputs.opschain_action_metadata}} }" > metadata.json
+        cat metadata.json
+        echo "opschain change create -p ${{opschain_project}} -e ${{opschain_project}} -G origin -g ${GITHUB_REF#refs/head} -y -a ${{opschain_action}} -m ./metadata.json
