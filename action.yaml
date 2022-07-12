@@ -19,9 +19,6 @@ inputs:
   opschain_action:
     description: opschain action
     required: true
-  opschain_metadata_file:
-    description: opschain metadata file
-    required: true
   opschain_requestTimeout:
     description: opschain request timeout
     default: '60000'
