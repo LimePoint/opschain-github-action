@@ -27,6 +27,10 @@ inputs:
     description: opschain action metadata
     default: ''
     required: true
+  opschain_remote:
+    description: opschain remote
+    default: 'origin'
+    required: true
 runs:
   using: composite
   steps:
@@ -40,4 +44,4 @@ runs:
       run: |-
         echo "{ \"github_workflow\": \"${GITHUB_WORKFLOW}\", \"github_repository\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\", \"github_actor\":\"${GITHUB_ACTOR}\", \"github_run_id\":\"${GITHUB_RUN_ID}\", \"workflow_run_url\":\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\", ${{inputs.opschain_action_metadata}} }" > metadata.json
         cat metadata.json
-        echo "opschain change create -p ${{opschain_project}} -e ${{opschain_project}} -G origin -g ${GITHUB_REF#refs/head} -y -a ${{opschain_action}} -m ./metadata.json
+        echo "opschain change create -p ${{inputs.opschain_project}} -e ${{inputs.opschain_environment}} -G ${{inputs.opschain_remote}} -g ${GITHUB_REF#refs/head} -y -a ${{inputs.opschain_action}} -m ./metadata.json
