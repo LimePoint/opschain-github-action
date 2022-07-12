@@ -31,6 +31,7 @@ runs:
   using: composite
   steps:
     - name: Deploy
+      shell: bash
       env:
         opschain_apiBaseUrl: ${{ inputs.opschain_apiBaseUrl }}
         opschain_username: ${{ inputs.opschain_username }}
