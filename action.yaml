@@ -33,6 +33,7 @@ inputs:
     required: true
   opschain_git_rev:
     description: The Git revision (branch/tag/commit) for the change
+    default: ${GITHUB_REF#refs/heads/}
     required: true
 runs:
   using: composite
