@@ -2,34 +2,37 @@ name: opschain change
 description: run an opschain change
 inputs:
   opschain_apiBaseUrl:
-    description: opschain api base URL
+    description: OpsChain API Base URL
     required: true
   opschain_username:
-    description: opschain username
+    description: OpsChain username
     required: true
   opschain_password:
-    description: opschain password
+    description: OpsChain password
     required: true
   opschain_project:
-    description: opschain project
+    description: Project code for the change
     required: true
   opschain_environment:
-    description: opschain environment
+    description: Environment code for the change
     required: true
   opschain_action:
-    description: opschain action
+    description: The action to perform during this change
     required: true
   opschain_requestTimeout:
     description: opschain request timeout
     default: '60000'
     required: true
   opschain_action_metadata:
-    description: opschain action metadata
+    description: The action to perform during this change
     default: ''
     required: true
-  opschain_remote:
-    description: opschain remote
+  opschain_git_remote:
+    description: Git Remote name
     default: 'origin'
+    required: true
+  opschain_git_rev:
+    description: The Git revision (branch/tag/commit) for the change
     required: true
 runs:
   using: composite
@@ -44,4 +47,4 @@ runs:
       run: |-
         echo "{ \"github_workflow\": \"${GITHUB_WORKFLOW}\", \"github_sha\": \"${GITHUB_SHA}\", \"github_repository\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\", \"github_actor\":\"${GITHUB_ACTOR}\", \"github_run_id\":\"${GITHUB_RUN_ID}\", \"workflow_run_url\":\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\", ${{inputs.opschain_action_metadata}} }" > metadata.json
         cat ./metadata.json
-        opschain change create -p ${{inputs.opschain_project}} -e ${{inputs.opschain_environment}} -G ${{inputs.opschain_remote}} -g ${GITHUB_REF#refs/heads/} -y -a ${{inputs.opschain_action}} -m ./metadata.json
+        opschain change create -p ${{inputs.opschain_project}} -e ${{inputs.opschain_environment}} -G ${{inputs.opschain_git_remote}} -g ${{inputs.opschain_git_rev}} -y -a ${{inputs.opschain_action}} -m ./metadata.json
