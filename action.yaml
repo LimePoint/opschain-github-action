@@ -48,4 +48,4 @@ runs:
       run: |-
         echo "{ \"github_workflow\": \"${GITHUB_WORKFLOW}\", \"github_sha\": \"${GITHUB_SHA}\", \"github_repository\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\", \"github_actor\":\"${GITHUB_ACTOR}\", \"github_run_id\":\"${GITHUB_RUN_ID}\", \"workflow_run_url\":\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\", ${{inputs.opschain_action_metadata}} }" > metadata.json
         cat ./metadata.json
-        opschain change create -p ${{inputs.opschain_project}} -e ${{inputs.opschain_environment}} -G ${{inputs.opschain_git_remote}} -g ${{inputs.opschain_git_rev}} -y -a ${{inputs.opschain_action}} -m ./metadata.json
+        opschain change create --project-code ${{inputs.opschain_project}} --environment-code ${{inputs.opschain_environment}} --git-remote-name ${{inputs.opschain_git_remote}} --git-rev ${{inputs.opschain_git_rev}} --action ${{inputs.opschain_action}} --metadata-path ./metadata.json --follow --confirm
