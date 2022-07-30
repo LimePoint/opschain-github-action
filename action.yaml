@@ -51,8 +51,6 @@ runs:
         opschain_password: ${{ inputs.opschain_password }}
         opschain_requestTimeout: ${{ inputs.opschain_requestTimeout }}
       run: |-
-        echo "inputs.opschain_apiBaseUrl: ${inputs.opschain_apiBaseUrl}"
-        echo "inputs.opschain_username: ${inputs.opschain_username}"
         echo "inputs.opschain_project: ${inputs.opschain_project}"
         echo "inputs.opschain_environment: ${inputs.opschain_environment}"
 
