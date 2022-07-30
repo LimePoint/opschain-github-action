@@ -12,12 +12,12 @@ inputs:
     required: true
   opschain_project:
     description: Project code for the change
-    default: ${GITHUB_REF#refs/heads/}
+    default: $(echo ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} | sed 's/-//g' | sed 's/_//g' | sed 's/ //g' | tr '[:upper:]' '[:lower:]')
     required: true
-  opschain_project_properties:
-    description: Project code for the change
-    default: ${GITHUB_REF#refs/heads/}
-    required: false
+  # opschain_project_properties:
+  #   description: Project code for the change
+  #   default: ${GITHUB_REF#refs/heads/}
+  #   required: false
   opschain_environment:
     description: Environment code for the change
     required: true
@@ -51,6 +51,11 @@ runs:
         opschain_password: ${{ inputs.opschain_password }}
         opschain_requestTimeout: ${{ inputs.opschain_requestTimeout }}
       run: |-
+        echo "inputs.opschain_apiBaseUrl: ${inputs.opschain_apiBaseUrl}"
+        echo "inputs.opschain_username: ${inputs.opschain_username}"
+        echo "inputs.opschain_project: ${inputs.opschain_project}"
+        echo "inputs.opschain_environment: ${inputs.opschain_environment}"
+
         PROJECT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq -r '.data[]| select(.attributes.code=="${{ inputs.opschain_project }}")' | wc -l)
         echo "Project Exists: ${PROJECT_EXISTS}"
         # Setup OpsChain Project
