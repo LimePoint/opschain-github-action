@@ -12,7 +12,7 @@ inputs:
     required: true
   opschain_project:
     description: Project code for the change
-    default: UNKNOWN
+    default: ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
     required: true
   # opschain_project_properties:
   #   description: Project code for the change
@@ -54,11 +54,25 @@ runs:
         echo "inputs.opschain_project: ${inputs.opschain_project}"
         echo "inputs.opschain_environment: ${inputs.opschain_environment}"
 
-        PROJECT_CODE=$(echo ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} | sed 's/-//g' | sed 's/_//g' | sed 's/ //g' | tr '[:upper:]' '[:lower:]')
-        echo "PROJECT_CODE: "${PROJECT_CODE}
+        echo "Git Ref: "${GITHUB_REF#refs/heads/}
+        echo "Git Repository: "${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+        echo "Git Repository Owner: "${GITHUB_REPOSITORY_OWNER}
+        echo "Git URL: "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
 
-        PROJECT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_code "${PROJECT_CODE}" -r '.data[]| select(.attributes.code==$project_code)' | wc -l)
-        echo "PROJECT_EXISTS: ${PROJECT_EXISTS}"
+        PROJECT_NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+        echo "Project Name: "${PROJECT_NAME}
+
+        PROJECT_CODE_NO_HYPHEN=${PROJECT_NAME//-/}
+        PROJECT_CODE_NO_UNDERSCORE=${PROJECT_CODE_NO_HYPHEN//_/}
+        PROJECT_CODE_DOWNCASE=$(echo ${PROJECT_CODE_NO_UNDERSCORE} | tr '[:upper:]' '[:lower:]')
+        PROJECT_CODE=${PROJECT_CODE_DOWNCASE}
+        echo "Project Code: "${PROJECT_CODE}
+
+        # PROJECT_CODE=$(echo ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} | sed 's/-//g' | sed 's/_//g' | sed 's/ //g' | tr '[:upper:]' '[:lower:]')
+        # echo "PROJECT_CODE: "${PROJECT_CODE}
+
+        # PROJECT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_code "${PROJECT_CODE}" -r '.data[]| select(.attributes.code==$project_code)' | wc -l)
+        # echo "PROJECT_EXISTS: ${PROJECT_EXISTS}"
 
         # Setup OpsChain Project
         #opschain project create --name "" --code ${{inputs.opschain_project}} --description "" --confirm
