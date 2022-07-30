@@ -117,7 +117,13 @@ runs:
 
         # Setup OpsChain Project Properties
         echo "INFO: ... setting Project Properties for Project [ ${PROJECT_CODE} ]"
-        echo ${{ inputs.opschain_project_properties }} > ./x.properties
+        echo "INFO: echo ${{ inputs.opschain_project_properties }}"
+        echo ${{ inputs.opschain_project_properties }}
+        echo "INFO: ... echo ${{ inputs.opschain_project_properties }} > ./x.properties"
+        # echo ${{ inputs.opschain_project_properties }} > ./x.properties
+        cat<<EOF>./x.properties
+        ${{ inputs.opschain_project_properties }}
+        EOF
         echo "INFO: ... cat ./x.properties"
         cat ./x.properties
         echo "INFO: ... cat ./x.properties | jq -r '.'"
