@@ -14,10 +14,10 @@ inputs:
     description: Project code for the change
     default: ""
     required: true
-  # opschain_project_properties:
-  #   description: Project code for the change
-  #   default: ${GITHUB_REF#refs/heads/}
-  #   required: false
+  opschain_project_properties:
+    description: Project code for the change
+    default: '{}'
+    required: true
   opschain_environment:
     description: Environment code for the change
     required: true
@@ -118,7 +118,15 @@ runs:
         # Setup OpsChain Project Properties
         PROJECT_ID=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects/${PROJECT_CODE} --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq -r '.data.id')
         echo "INFO: OpsChain Project ID: "${PROJECT_ID}
-        # TODO
+
+        echo "INFO: ... setting Project Properties for Project [ ${PROJECT_CODE} ]"
+        echo ${{ inputs.opschain_project_properties }} > ./x.properties
+        opschain project set-properties -p ${PROJECT_CODE} -f ./x.properties --confirm
+
+        if [ $? -ne 0 ]; then
+          echo "ERROR: Failed to set Project level properties for OpsChain Project [ ${PROJECT_CODE} ]. Aborting."
+          exit 1
+        fi
 
         # Setup OpsChain Environment
         ENVIRONMENT_CODE=${{ inputs.opschain_environment }}
