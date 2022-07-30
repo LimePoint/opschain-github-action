@@ -12,7 +12,7 @@ inputs:
     required: true
   opschain_project:
     description: Project code for the change
-    default: $(echo ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} | sed 's/-//g' | sed 's/_//g' | sed 's/ //g' | tr '[:upper:]' '[:lower:]')
+    default: UNKNOWN
     required: true
   # opschain_project_properties:
   #   description: Project code for the change
@@ -54,8 +54,12 @@ runs:
         echo "inputs.opschain_project: ${inputs.opschain_project}"
         echo "inputs.opschain_environment: ${inputs.opschain_environment}"
 
-        PROJECT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_code ${{ inputs.opschain_project }}  -r '.data[]| select(.attributes.code==$project_code)' | wc -l)
-        echo "Project Exists: ${PROJECT_EXISTS}"
+        PROJECT_CODE=$(echo ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/} | sed 's/-//g' | sed 's/_//g' | sed 's/ //g' | tr '[:upper:]' '[:lower:]')
+        echo "PROJECT_CODE: "${PROJECT_CODE}
+
+        PROJECT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_code "${PROJECT_CODE}" -r '.data[]| select(.attributes.code==$project_code)' | wc -l)
+        echo "PROJECT_EXISTS: ${PROJECT_EXISTS}"
+
         # Setup OpsChain Project
         #opschain project create --name "" --code ${{inputs.opschain_project}} --description "" --confirm
         # Setup OpsChain Project Git Remote 
