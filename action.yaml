@@ -116,11 +116,9 @@ runs:
         fi
 
         # Setup OpsChain Project Properties
-        PROJECT_ID=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects/${PROJECT_CODE} --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq -r '.data.id')
-        echo "INFO: OpsChain Project ID: "${PROJECT_ID}
-
         echo "INFO: ... setting Project Properties for Project [ ${PROJECT_CODE} ]"
         echo ${{ inputs.opschain_project_properties }} > ./x.properties
+        cat ./x.properties
         opschain project set-properties -p ${PROJECT_CODE} -f ./x.properties --confirm
 
         if [ $? -ne 0 ]; then
@@ -129,6 +127,9 @@ runs:
         fi
 
         # Setup OpsChain Environment
+        PROJECT_ID=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects/${PROJECT_CODE} --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq -r '.data.id')
+        echo "INFO: OpsChain Project ID: "${PROJECT_ID}
+
         ENVIRONMENT_CODE=${{ inputs.opschain_environment }}
 
         ENVIRONMENT_CODE_NO_HYPHEN=${ENVIRONMENT_CODE//-/}
