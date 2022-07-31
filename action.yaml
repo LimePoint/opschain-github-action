@@ -196,7 +196,8 @@ runs:
           "github_run_id":"${GITHUB_RUN_ID}",
           "workflow_run_url":"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           ${OPSCHAIN_METADATA}
-        }"
+        }
+        EOF
         cat ./metadata.json
 
         PROJECT_NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
