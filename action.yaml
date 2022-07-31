@@ -116,9 +116,14 @@ runs:
         fi
 
         # Setup OpsChain Project Properties
-        PROP_LENGTH=$(expr length "${{ inputs.opschain_project_properties }}")
-        if [ ${PROP_LENGTH} -eq 0 ]; then
+        if [ ! -z ${{ inputs.opschain_project_properties }} ]; then
           echo "INFO: ... setting Project Properties for Project [ ${PROJECT_CODE} ]"
+          if jq -e . >/dev/null 2>&1 <<<"${{ inputs.opschain_project_properties }}"; then
+              echo "INFO: Parsed Project Properties JSON successfully"
+          else
+              echo "ERROR: Failed to parse JSON specified in inputs.opschain_project_properties. Aborting."
+              exit 1
+          fi
           cat<<EOF>./.opschain.project.properties
           ${{ inputs.opschain_project_properties }}
           EOF
