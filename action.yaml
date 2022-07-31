@@ -116,7 +116,7 @@ runs:
         fi
 
         # Setup OpsChain Project Properties
-        if [ ! -z ${{ inputs.opschain_project_properties }} ]; then
+        if [ ! -z "${{ inputs.opschain_project_properties }}" ]; then
           echo "INFO: ... setting Project Properties for Project [ ${PROJECT_CODE} ]"
           if jq -e . >/dev/null 2>&1 <<<"${{ inputs.opschain_project_properties }}"; then
               echo "INFO: Parsed Project Properties JSON successfully"
