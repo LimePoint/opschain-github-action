@@ -124,7 +124,7 @@ runs:
               echo "ERROR: Failed to parse JSON specified in inputs.opschain_project_properties. Aborting."
               exit 1
           fi
-          cat<<EOF>./.opschain.project.properties
+          cat<<EOF > ./.opschain.project.properties
           ${{ inputs.opschain_project_properties }}
           EOF
           opschain project set-properties -p ${PROJECT_CODE} -f ./.opschain.project.properties --confirm
@@ -187,14 +187,14 @@ runs:
           OPSCHAIN_METADATA=", ${{inputs.opschain_action_metadata}}"
           echo "INFO: OPSCHAIN_METADATA: ${OPSCHAIN_METADATA}"
         fi
-        cat<<EOF>./metadata.json
+        cat<<EOF > ./metadata.json
         {
           "github_workflow": "${GITHUB_WORKFLOW}",
           "github_sha": "${GITHUB_SHA}",
           "github_repository": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}",
-          "github_actor":"${GITHUB_ACTOR}",
-          "github_run_id":"${GITHUB_RUN_ID}",
-          "workflow_run_url":"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          "github_actor": "${GITHUB_ACTOR}",
+          "github_run_id": "${GITHUB_RUN_ID}",
+          "workflow_run_url": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           ${OPSCHAIN_METADATA}
         }
         EOF
