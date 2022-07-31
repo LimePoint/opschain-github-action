@@ -116,16 +116,19 @@ runs:
         fi
 
         # Setup OpsChain Project Properties
-        echo "INFO: ... setting Project Properties for Project [ ${PROJECT_CODE} ]"
-        cat<<EOF>./.opschain.project.properties
-        ${{ inputs.opschain_project_properties }}
-        EOF
-        opschain project set-properties -p ${PROJECT_CODE} -f ./.opschain.project.properties --confirm
-        if [ $? -ne 0 ]; then
-          echo "ERROR: Failed to set Project level properties for OpsChain Project [ ${PROJECT_CODE} ]. Aborting."
-          exit 1
+        PROP_LENGTH=$(expr length "${{ inputs.opschain_project_properties }}")
+        if [ ${PROP_LENGTH} -eq 0 ]; then
+          echo "INFO: ... setting Project Properties for Project [ ${PROJECT_CODE} ]"
+          cat<<EOF>./.opschain.project.properties
+          ${{ inputs.opschain_project_properties }}
+          EOF
+          opschain project set-properties -p ${PROJECT_CODE} -f ./.opschain.project.properties --confirm
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Failed to set Project level properties for OpsChain Project [ ${PROJECT_CODE} ]. Aborting."
+            exit 1
+          fi
+          rm -f ./.opschain.project.properties
         fi
-        rm -f ./.opschain.project.properties
 
         # Setup OpsChain Environment
         PROJECT_ID=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects/${PROJECT_CODE} --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq -r '.data.id')
@@ -161,7 +164,7 @@ runs:
         fi
 
         # Setup OpsChain Environment Properties
-        # TODO
+        # TODO??
 
     - name: OpsChain-Change-Create
       shell: bash
@@ -179,8 +182,16 @@ runs:
           OPSCHAIN_METADATA=", ${{inputs.opschain_action_metadata}}"
           echo "INFO: OPSCHAIN_METADATA: ${OPSCHAIN_METADATA}"
         fi
-
-        echo "{ \"github_workflow\": \"${GITHUB_WORKFLOW}\", \"github_sha\": \"${GITHUB_SHA}\", \"github_repository\": \"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}\", \"github_actor\":\"${GITHUB_ACTOR}\", \"github_run_id\":\"${GITHUB_RUN_ID}\", \"workflow_run_url\":\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\" ${OPSCHAIN_METADATA} }" > metadata.json
+        cat<<EOF>./metadata.json
+        {
+          "github_workflow": "${GITHUB_WORKFLOW}",
+          "github_sha": "${GITHUB_SHA}",
+          "github_repository": "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}",
+          "github_actor":"${GITHUB_ACTOR}",
+          "github_run_id":"${GITHUB_RUN_ID}",
+          "workflow_run_url":"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          ${OPSCHAIN_METADATA}
+        }"
         cat ./metadata.json
 
         PROJECT_NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
