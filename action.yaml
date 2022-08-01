@@ -57,28 +57,28 @@ runs:
         opschain_password: ${{ inputs.opschain_password }}
         opschain_requestTimeout: ${{ inputs.opschain_requestTimeout }}
       run: |-
-        echo "inputs.opschain_project: ${{ inputs.opschain_project }}"
-        echo "inputs.opschain_environment: ${{ inputs.opschain_username }}"
+        # echo "inputs.opschain_project: ${{ inputs.opschain_project }}"
+        # echo "inputs.opschain_environment: ${{ inputs.opschain_username }}"
 
         PROJECT_NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
-        echo "INFO: Project Name: "${PROJECT_NAME}
+        # echo "INFO: Project Name: "${PROJECT_NAME}
 
         PROJECT_CODE_NO_HYPHEN=${PROJECT_NAME//-/}
-        echo "INFO: PROJECT_CODE_NO_HYPHEN: ${PROJECT_CODE_NO_HYPHEN}"
+        # echo "INFO: PROJECT_CODE_NO_HYPHEN: ${PROJECT_CODE_NO_HYPHEN}"
 
         PROJECT_CODE_NO_UNDERSCORE=${PROJECT_CODE_NO_HYPHEN//_/}
-        echo "INFO: PROJECT_CODE_NO_UNDERSCORE: ${PROJECT_CODE_NO_UNDERSCORE}"
+        # echo "INFO: PROJECT_CODE_NO_UNDERSCORE: ${PROJECT_CODE_NO_UNDERSCORE}"
 
         PROJECT_CODE_DOWNCASE=$(echo ${PROJECT_CODE_NO_UNDERSCORE} | tr '[:upper:]' '[:lower:]')
-        echo "INFO: PROJECT_CODE_DOWNCASE: ${PROJECT_CODE_DOWNCASE}"
+        # echo "INFO: PROJECT_CODE_DOWNCASE: ${PROJECT_CODE_DOWNCASE}"
 
         PROJECT_CODE=${PROJECT_CODE_DOWNCASE}
-        echo "INFO: PROJECT_CODE: ${PROJECT_CODE}"
+        # echo "INFO: PROJECT_CODE: ${PROJECT_CODE}"
 
         if [ ! -z "${{ inputs.opschain_project }}" ]; then
           echo "INFO: ... OpsChain Project Code specified with inputs"
           PROJECT_CODE=${{ inputs.opschain_project }}
-          echo "INFO: PROJECT_CODE: ${PROJECT_CODE}"
+          # echo "INFO: PROJECT_CODE: ${PROJECT_CODE}"
         fi
         echo "INFO: OpsChain Project Code: "${PROJECT_CODE}
         echo ::set-output name=project_code::${PROJECT_CODE}
@@ -89,8 +89,7 @@ runs:
         echo "INFO: Git URL: "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
 
         PROJECT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_code "${PROJECT_CODE}" -r '.data[]| select(.attributes.code==$project_code)' | wc -l)
-        echo "PROJECT_EXISTS: ${PROJECT_EXISTS}"
-
+        # echo "PROJECT_EXISTS: ${PROJECT_EXISTS}"
         if [ ${PROJECT_EXISTS} -eq 0 ]; then
           echo "INFO: ... creating OpsChain Project [ ${PROJECT_NAME} ] with Code [ ${PROJECT_CODE} ]"
           # Setup OpsChain Project
@@ -140,24 +139,24 @@ runs:
 
         # Setup OpsChain Environment
         PROJECT_ID=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects/${PROJECT_CODE} --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq -r '.data.id')
-        echo "INFO: OpsChain Project ID: "${PROJECT_ID}
+        # echo "INFO: OpsChain Project ID: "${PROJECT_ID}
 
         ENVIRONMENT_CODE=${{ inputs.opschain_environment }}
 
         ENVIRONMENT_CODE_NO_HYPHEN=${ENVIRONMENT_CODE//-/}
-        echo "INFO: ENVIRONMENT_CODE_NO_HYPHEN: ${ENVIRONMENT_CODE_NO_HYPHEN}"
+        # echo "INFO: ENVIRONMENT_CODE_NO_HYPHEN: ${ENVIRONMENT_CODE_NO_HYPHEN}"
 
         ENVIRONMENT_CODE_NO_UNDERSCORE=${ENVIRONMENT_CODE_NO_HYPHEN//_/}
-        echo "INFO: ENVIRONMENT_CODE_NO_UNDERSCORE: ${ENVIRONMENT_CODE_NO_UNDERSCORE}"
+        # echo "INFO: ENVIRONMENT_CODE_NO_UNDERSCORE: ${ENVIRONMENT_CODE_NO_UNDERSCORE}"
 
         ENVIRONMENT_CODE_DOWNCASE=$(echo ${ENVIRONMENT_CODE_NO_UNDERSCORE} | tr '[:upper:]' '[:lower:]')
-        echo "INFO: ENVIRONMENT_CODE_DOWNCASE: ${ENVIRONMENT_CODE_DOWNCASE}"
+        # echo "INFO: ENVIRONMENT_CODE_DOWNCASE: ${ENVIRONMENT_CODE_DOWNCASE}"
 
         ENV_CODE=${ENVIRONMENT_CODE_DOWNCASE}
-        echo "INFO: ENV_CODE: ${ENV_CODE}"
+        # echo "INFO: ENV_CODE: ${ENV_CODE}"
 
         ENVIRONMENT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/environments --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_id ${PROJECT_ID} --arg env_code ${ENV_CODE} -r '.data[]|select(.relationships.project.data.id==$project_id)|select(.attributes.code==$env_code)' | wc -l)
-        echo "INFO: ENVIRONMENT_EXISTS: ${ENVIRONMENT_EXISTS}"
+        # echo "INFO: ENVIRONMENT_EXISTS: ${ENVIRONMENT_EXISTS}"
 
         if [ ${ENVIRONMENT_EXISTS} -eq 0 ]; then
           echo "INFO: ... creating OpsChain Environment with Code [ ${ENV_CODE} ] for Project [ ${PROJECT_NAME} ] with Code [ ${PROJECT_CODE} ]"
@@ -204,21 +203,21 @@ runs:
         cat ./metadata.json
 
         PROJECT_CODE=${{ steps.bootstrap.outputs.project_code }}
-        echo "INFO: PROJECT_CODE: ${PROJECT_CODE}"
+        # echo "INFO: PROJECT_CODE: ${PROJECT_CODE}"
 
         ENVIRONMENT_CODE=${{ inputs.opschain_environment }}
 
         ENVIRONMENT_CODE_NO_HYPHEN=${ENVIRONMENT_CODE//-/}
-        echo "INFO: ENVIRONMENT_CODE_NO_HYPHEN: ${ENVIRONMENT_CODE_NO_HYPHEN}"
+        # echo "INFO: ENVIRONMENT_CODE_NO_HYPHEN: ${ENVIRONMENT_CODE_NO_HYPHEN}"
 
         ENVIRONMENT_CODE_NO_UNDERSCORE=${ENVIRONMENT_CODE_NO_HYPHEN//_/}
-        echo "INFO: ENVIRONMENT_CODE_NO_UNDERSCORE: ${ENVIRONMENT_CODE_NO_UNDERSCORE}"
+        # echo "INFO: ENVIRONMENT_CODE_NO_UNDERSCORE: ${ENVIRONMENT_CODE_NO_UNDERSCORE}"
 
         ENVIRONMENT_CODE_DOWNCASE=$(echo ${ENVIRONMENT_CODE_NO_UNDERSCORE} | tr '[:upper:]' '[:lower:]')
-        echo "INFO: ENVIRONMENT_CODE_DOWNCASE: ${ENVIRONMENT_CODE_DOWNCASE}"
+        # echo "INFO: ENVIRONMENT_CODE_DOWNCASE: ${ENVIRONMENT_CODE_DOWNCASE}"
 
         ENV_CODE=${ENVIRONMENT_CODE_DOWNCASE}
-        echo "INFO: ENV_CODE: ${ENV_CODE}"
+        # echo "INFO: ENV_CODE: ${ENV_CODE}"
 
         opschain change create --project-code ${PROJECT_CODE} --environment-code ${ENV_CODE} --git-remote-name ${{ inputs.opschain_git_remote }} --git-rev ${{inputs.opschain_git_rev}} --action ${{inputs.opschain_action}} --metadata-path ./metadata.json --confirm -f 
         exit $?
