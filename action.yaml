@@ -131,8 +131,9 @@ runs:
             fi
             rm -f ./.opschain.project.properties
           else
-              echo "ERROR: Failed to parse JSON specified in inputs.opschain_project_properties. Aborting."
-              exit 1
+            echo ${RESULT}
+            echo "ERROR: Failed to parse JSON specified in inputs.opschain_project_properties. Aborting."
+            exit 1
           fi
         fi
 
