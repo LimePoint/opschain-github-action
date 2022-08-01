@@ -121,7 +121,8 @@ runs:
           cat<<EOF > ./.opschain.project.properties
           ${{ inputs.opschain_project_properties }}
         EOF
-          if [ $(jq empty ./.opschain.project.properties) -ne 0 ]; then 
+          RESULT=$(jq empty ./.opschain.project.properties)
+          if [ $? -ne 0 ]; then
             echo "INFO: Parsed Project Properties JSON successfully"
             opschain project set-properties -p ${PROJECT_CODE} -f ./.opschain.project.properties --confirm
             if [ $? -ne 0 ]; then
