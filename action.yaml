@@ -50,6 +50,7 @@ runs:
   using: composite
   steps:
     - name: OpsChain-Bootstrap-Project-and-Environments
+      id: bootstrap
       shell: bash
       env:
         opschain_apiBaseUrl: ${{ inputs.opschain_apiBaseUrl }}
@@ -81,6 +82,7 @@ runs:
           echo "INFO: PROJECT_CODE: ${PROJECT_CODE}"
         fi
         echo "INFO: OpsChain Project Code: "${PROJECT_CODE}
+        echo ::set-output name=project_code::${PROJECT_CODE}
 
         echo "INFO: Git Ref: "${GITHUB_REF#refs/heads/}
         echo "INFO: Git Repository: "${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
@@ -202,19 +204,7 @@ runs:
         EOF
         cat ./metadata.json
 
-        PROJECT_NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
-        echo "INFO: Project Name: "${PROJECT_NAME}
-
-        PROJECT_CODE_NO_HYPHEN=${PROJECT_NAME//-/}
-        echo "INFO: PROJECT_CODE_NO_HYPHEN: ${PROJECT_CODE_NO_HYPHEN}"
-
-        PROJECT_CODE_NO_UNDERSCORE=${PROJECT_CODE_NO_HYPHEN//_/}
-        echo "INFO: PROJECT_CODE_NO_UNDERSCORE: ${PROJECT_CODE_NO_UNDERSCORE}"
-
-        PROJECT_CODE_DOWNCASE=$(echo ${PROJECT_CODE_NO_UNDERSCORE} | tr '[:upper:]' '[:lower:]')
-        echo "INFO: PROJECT_CODE_DOWNCASE: ${PROJECT_CODE_DOWNCASE}"
-
-        PROJECT_CODE=${PROJECT_CODE_DOWNCASE}
+        PROJECT_CODE=${{ steps.bootstrap.outputs.project_code }}
         echo "INFO: PROJECT_CODE: ${PROJECT_CODE}"
 
         ENVIRONMENT_CODE=${{ inputs.opschain_environment }}
