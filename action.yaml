@@ -16,8 +16,7 @@ inputs:
     required: true
   opschain_project_properties:
     description: Project code for the change
-    default: '{}'
-    required: true
+    required: false
   opschain_environment:
     description: Environment code for the change
     required: true
