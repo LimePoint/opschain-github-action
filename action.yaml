@@ -122,7 +122,7 @@ runs:
           ${{ inputs.opschain_project_properties }}
         EOF
           RESULT=$(jq empty ./.opschain.project.properties)
-          if [ $? -ne 0 ]; then
+          if [ $? -eq 0 ]; then
             echo "INFO: Parsed Project Properties JSON successfully"
             opschain project set-properties -p ${PROJECT_CODE} -f ./.opschain.project.properties --confirm
             if [ $? -ne 0 ]; then
@@ -131,7 +131,6 @@ runs:
             fi
             rm -f ./.opschain.project.properties
           else
-            echo ${RESULT}
             echo "ERROR: Failed to parse JSON specified in inputs.opschain_project_properties. Aborting."
             exit 1
           fi
