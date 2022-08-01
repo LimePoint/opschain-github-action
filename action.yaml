@@ -121,6 +121,7 @@ runs:
           cat<<EOF > ./.opschain.project.properties
           ${{ inputs.opschain_project_properties }}
         EOF
+          # Is OpsChain Project Properties Valid JSON?
           RESULT=$(jq empty ./.opschain.project.properties)
           if [ $? -eq 0 ]; then
             echo "INFO: Parsed Project Properties JSON successfully"
