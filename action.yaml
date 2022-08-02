@@ -122,11 +122,11 @@ runs:
           RESULT=$(jq empty ./.opschain.project.properties)
           if [ $? -eq 0 ]; then
             echo "INFO: Parsed Project Properties JSON successfully"
-            opschain project set-properties -p ${PROJECT_CODE} -f ./.opschain.project.properties --confirm
-            if [ $? -ne 0 ]; then
-              echo "ERROR: Failed to set Project level properties for OpsChain Project [ ${PROJECT_CODE} ]. Aborting."
-              exit 1
-            fi
+            until opschain project set-properties -p ${PROJECT_CODE} -f ./.opschain.project.properties --confirm; do sleep 1; done
+            # if [ $? -ne 0 ]; then
+            #   echo "ERROR: Failed to set Project level properties for OpsChain Project [ ${PROJECT_CODE} ]. Aborting."
+            #   exit 1
+            # fi
             rm -f ./.opschain.project.properties
           else
             echo "ERROR: Failed to parse JSON specified in inputs.opschain_project_properties. Aborting."
