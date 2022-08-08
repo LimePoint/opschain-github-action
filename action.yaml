@@ -15,11 +15,14 @@ inputs:
     default: ""
     required: true
   opschain_project_properties:
-    description: Project code for the change
+    description: Project Properties (JSON) to set on the Project level
     required: false
   opschain_environment:
     description: Environment code for the change
     required: true
+  opschain_environment_properties:
+    description: Environment Properties (JSON) to set on the Environment level
+    required: false
   opschain_action:
     description: The action to perform during this change
     required: true
@@ -123,10 +126,6 @@ runs:
           if [ $? -eq 0 ]; then
             echo "INFO: Parsed Project Properties JSON successfully"
             until opschain project set-properties -p ${PROJECT_CODE} -f ./.opschain.project.properties --confirm; do sleep 1; done
-            # if [ $? -ne 0 ]; then
-            #   echo "ERROR: Failed to set Project level properties for OpsChain Project [ ${PROJECT_CODE} ]. Aborting."
-            #   exit 1
-            # fi
             rm -f ./.opschain.project.properties
           else
             echo "ERROR: Failed to parse JSON specified in inputs.opschain_project_properties. Aborting."
@@ -165,7 +164,22 @@ runs:
         fi
 
         # Setup OpsChain Environment Properties
-        # TODO??
+        if [ ! -z "${{ inputs.opschain_environment_properties }}" ]; then
+          echo "INFO: ... setting Environment Properties on Environment [ ${ENV_CODE} ] for Project [ ${PROJECT_CODE} ]"
+          cat<<EOF > ./.opschain.environment.properties
+          ${{ inputs.opschain_environment_properties }}
+        EOF
+          # Is OpsChain Environment Properties Valid JSON?
+          RESULT=$(jq empty ./.opschain.environment.properties)
+          if [ $? -eq 0 ]; then
+            echo "INFO: Parsed Environment Properties JSON successfully"
+            until opschain environment set-properties -p ${PROJECT_CODE} -e ${ENV_CODE} -f ./.opschain.environment.properties --confirm; do sleep 1; done
+            rm -f ./.opschain.environment.properties
+          else
+            echo "ERROR: Failed to parse JSON specified in inputs.opschain_environment_properties. Aborting."
+            exit 1
+          fi
+        fi
 
     - name: OpsChain-Change-Create
       shell: bash
