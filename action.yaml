@@ -129,7 +129,7 @@ runs:
         ENVIRONMENT_CODE_DOWNCASE=$(echo ${ENVIRONMENT_CODE_NO_HYPHEN} | tr '[:upper:]' '[:lower:]')
         ENV_CODE=${ENVIRONMENT_CODE_DOWNCASE}
 
-        ENVIRONMENT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/environments --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_id ${PROJECT_ID} --arg env_code ${ENV_CODE} -r '.data[]|select(.relationships.project.data.id==$project_id)|select(.attributes.code==$env_code)' | wc -l)
+        ENVIRONMENT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects/${PROJECT_CODE}/environments --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_id ${PROJECT_ID} --arg env_code ${ENV_CODE} -r '.data[]|select(.relationships.project.data.id==$project_id)|select(.attributes.code==$env_code)' | wc -l)
 
         if [ ${ENVIRONMENT_EXISTS} -eq 0 ]; then
           echo "INFO: ... creating OpsChain Environment with Code [ ${ENV_CODE} ] for Project [ ${PROJECT_NAME} ] with Code [ ${PROJECT_CODE} ]"
