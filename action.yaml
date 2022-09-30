@@ -197,5 +197,5 @@ runs:
         ENV_CODE=${ENVIRONMENT_CODE_DOWNCASE}
 
         echo "OpsChain Info: $(DEBUG=axios opschain info -o yaml)"
-        opschain change create --project-code ${PROJECT_CODE} --environment-code ${ENV_CODE} --git-remote-name ${{ inputs.opschain_git_remote }} --git-rev ${{inputs.opschain_git_rev}} --action ${{inputs.opschain_action}} --metadata-path ./metadata.json --confirm -f -o json
+        opschain change create --project-code ${PROJECT_CODE} --environment-code ${ENV_CODE} --git-remote-name ${{ inputs.opschain_git_remote }} --git-rev ${{inputs.opschain_git_rev}} --action ${{inputs.opschain_action}} --metadata-path ./metadata.json --confirm -f -o yaml
         exit $?
