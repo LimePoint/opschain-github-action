@@ -59,6 +59,7 @@ runs:
         opschain_username: ${{ inputs.opschain_username }}
         opschain_password: ${{ inputs.opschain_password }}
         opschain_requestTimeout: ${{ inputs.opschain_requestTimeout }}
+        opschain_outputFormat: json
       run: |-
         PROJECT_NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
         PROJECT_CODE_NO_HYPHEN=${PROJECT_NAME//-/}
@@ -196,6 +197,6 @@ runs:
         ENVIRONMENT_CODE_DOWNCASE=$(echo ${ENVIRONMENT_CODE_NO_HYPHEN} | tr '[:upper:]' '[:lower:]')
         ENV_CODE=${ENVIRONMENT_CODE_DOWNCASE}
 
-        echo "OpsChain Info: $(DEBUG=axios opschain info)"
-        opschain change create --project-code ${PROJECT_CODE} --environment-code ${ENV_CODE} --git-remote-name ${{ inputs.opschain_git_remote }} --git-rev ${{inputs.opschain_git_rev}} --action ${{inputs.opschain_action}} --metadata-path ./metadata.json --confirm -f 
+        echo "OpsChain Info: $(DEBUG=axios opschain info -o yaml)"
+        opschain change create --project-code ${PROJECT_CODE} --environment-code ${ENV_CODE} --git-remote-name ${{ inputs.opschain_git_remote }} --git-rev ${{inputs.opschain_git_rev}} --action ${{inputs.opschain_action}} --metadata-path ./metadata.json --confirm -f
         exit $?
