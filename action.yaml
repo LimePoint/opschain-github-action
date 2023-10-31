@@ -14,15 +14,9 @@ inputs:
     description: Project code for the change
     default: ""
     required: true
-  opschain_project_properties:
-    description: Project Properties (JSON) to set on the Project level
-    required: false
   opschain_environment:
     description: Environment code for the change
     required: true
-  opschain_environment_properties:
-    description: Environment Properties (JSON) to set on the Environment level
-    required: false
   opschain_action:
     description: The action to perform during this change
     required: true
@@ -31,22 +25,22 @@ inputs:
     default: '60000'
     required: false
   opschain_action_metadata:
-    description: The action to perform during this change
+    description: The metadata to store along with this change
     default: ''
     required: true
   opschain_git_remote:
-    description: Git Remote name
+    description: Git Remote name to use on the OpsChain Project
     default: 'origin'
     required: true
   opschain_git_rev:
     description: The Git revision (branch/tag/commit) for the change
     default: ${GITHUB_SHA}
     required: true
-  opschain_git_username:
-    description: Git Repository Username
+  opschain_github_username:
+    description: The GitHub Username with which to authenticate
     required: true
-  opschain_git_password:
-    description: Git Repository Password
+  opschain_github_pat:
+    description: The GitHub Privileged Access Token with which to authenticate
     required: true
 runs:
   using: composite
@@ -76,11 +70,14 @@ runs:
         echo "INFO: Git Repository Owner: "${GITHUB_REPOSITORY_OWNER}
         echo "INFO: Git URL: "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}
 
-        PROJECT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_code "${PROJECT_CODE}" -r '.data[]| select(.attributes.code==$project_code)' | wc -l)
+        PROJECT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/api/projects --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_code "${PROJECT_CODE}" -r '.data[]| select(.attributes.code==$project_code)' | wc -l)
         if [ ${PROJECT_EXISTS} -eq 0 ]; then
           echo "INFO: ... creating OpsChain Project [ ${PROJECT_NAME} ] with Code [ ${PROJECT_CODE} ]"
           # Setup OpsChain Project
-          opschain project create --name "${PROJECT_NAME}" --code "${PROJECT_CODE}" --description "OpsChain Project: ${PROJECT_NAME}" --confirm
+          opschain project create --name "${PROJECT_NAME}" \
+                                  --code "${PROJECT_CODE}" \
+                                  --description "OpsChain Project: ${PROJECT_NAME}" \
+                                  --confirm
           if [ $? -ne 0 ]; then
             echo "ERROR: Failed to add OpsChain Project [ ${PROJECT_CODE} ]. Aborting."
             exit 1
@@ -90,10 +87,16 @@ runs:
         fi
 
         # Setup OpsChain Project Git Remote
-        GIT_REMOTE_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects/${PROJECT_CODE}/git_remotes --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg git_remote ${{ inputs.opschain_git_remote }} -r '.data|select(length > 0)|map(select(.attributes.name==$git_remote))' | wc -l)
+        GIT_REMOTE_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/api/projects/${PROJECT_CODE}/git_remotes --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg git_remote ${{ inputs.opschain_git_remote }} -r '.data|select(length > 0)|map(select(.attributes.name==$git_remote))' | wc -l)
         if [ ${GIT_REMOTE_EXISTS} -eq 0 ]; then
           echo "INFO: ... adding Git Remote [ ${{ inputs.opschain_git_remote }} ] to Project [ ${PROJECT_CODE} ]"
-          opschain project add-git-remote --project-code ${PROJECT_CODE} --name ${{ inputs.opschain_git_remote }} --url ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git -U "${{ inputs.opschain_git_username }}" -P "${{ inputs.opschain_git_password }}" --ssh-key-file "" --confirm
+          opschain project add-git-remote --project-code ${PROJECT_CODE} \
+                                          --name ${{ inputs.opschain_git_remote }} \
+                                          --url ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git \
+                                          -U "${{ inputs.opschain_github_username }}" \
+                                          -P "${{ inputs.opschain_github_pat }}" \
+                                          --ssh-key-file "" \
+                                          --confirm
           if [ $? -ne 0 ]; then
             echo "ERROR: Failed to add git remote to OpsChain Project [ ${PROJECT_CODE} ]. Aborting."
             exit 1
@@ -102,26 +105,8 @@ runs:
           echo "INFO: ... OpsChain Project Git Remote [ ${{ inputs.opschain_git_remote }} ] already exists. No action."
         fi
 
-        # Setup OpsChain Project Properties
-        if [ ! -z "${{ inputs.opschain_project_properties }}" ]; then
-          echo "INFO: ... setting Project Properties for Project [ ${PROJECT_CODE} ]"
-          cat<<EOF > ./.opschain.project.properties
-          ${{ inputs.opschain_project_properties }}
-        EOF
-          # Is OpsChain Project Properties Valid JSON?
-          RESULT=$(jq empty ./.opschain.project.properties)
-          if [ $? -eq 0 ]; then
-            echo "INFO: Parsed Project Properties JSON successfully"
-            until opschain project set-properties -p ${PROJECT_CODE} -f ./.opschain.project.properties --confirm; do sleep 1; done
-            rm -f ./.opschain.project.properties
-          else
-            echo "ERROR: Failed to parse JSON specified in inputs.opschain_project_properties. Aborting."
-            exit 1
-          fi
-        fi
-
         # Setup OpsChain Environment
-        PROJECT_ID=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects/${PROJECT_CODE} --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq -r '.data.id')
+        PROJECT_ID=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/api/projects/${PROJECT_CODE} --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq -r '.data.id')
         echo "INFO: OpsChain Project ID: "${PROJECT_ID}
 
         ENVIRONMENT_CODE=${{ inputs.opschain_environment }}
@@ -129,36 +114,22 @@ runs:
         ENVIRONMENT_CODE_DOWNCASE=$(echo ${ENVIRONMENT_CODE_NO_HYPHEN} | tr '[:upper:]' '[:lower:]')
         ENV_CODE=${ENVIRONMENT_CODE_DOWNCASE}
 
-        ENVIRONMENT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/projects/${PROJECT_CODE}/environments --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_id ${PROJECT_ID} --arg env_code ${ENV_CODE} -r '.data[]|select(.relationships.project.data.id==$project_id)|select(.attributes.code==$env_code)' | wc -l)
+        ENVIRONMENT_EXISTS=$(curl -sL ${{ inputs.opschain_apiBaseUrl }}/api/projects/${PROJECT_CODE}/environments --user ${{ inputs.opschain_username }}:${{ inputs.opschain_password }} | jq --arg project_id ${PROJECT_ID} --arg env_code ${ENV_CODE} -r '.data[]|select(.relationships.project.data.id==$project_id)|select(.attributes.code==$env_code)|select(.attributes.archived==false)' | wc -l)
 
         if [ ${ENVIRONMENT_EXISTS} -eq 0 ]; then
           echo "INFO: ... creating OpsChain Environment with Code [ ${ENV_CODE} ] for Project [ ${PROJECT_NAME} ] with Code [ ${PROJECT_CODE} ]"
           # Setup OpsChain Environment
-          opschain environment create --project-code ${PROJECT_CODE} --name "${{ inputs.opschain_environment }}" --code "${ENV_CODE}" --description "OpsChain Environment: ${{ inputs.opschain_environment }}" --confirm
+          opschain environment create --project-code ${PROJECT_CODE} \
+                                      --name "${{ inputs.opschain_environment }}" \
+                                      --code "${ENV_CODE}" \
+                                      --description "OpsChain Environment: ${{ inputs.opschain_environment }}" \
+                                      --confirm
           if [ $? -ne 0 ]; then
             echo "ERROR: Failed to add OpsChain Environment [ ${ENV_CODE} ] to Project [ ${PROJECT_CODE} ]. Aborting."
             exit 1
           fi
         else
           echo "INFO: ... OpsChain Environment with Code [ ${ENV_CODE} ] already exists. No action."
-        fi
-
-        # Setup OpsChain Environment Properties
-        if [ ! -z "${{ inputs.opschain_environment_properties }}" ]; then
-          echo "INFO: ... setting Environment Properties on Environment [ ${ENV_CODE} ] for Project [ ${PROJECT_CODE} ]"
-          cat<<EOF > ./.opschain.environment.properties
-          ${{ inputs.opschain_environment_properties }}
-        EOF
-          # Is OpsChain Environment Properties Valid JSON?
-          RESULT=$(jq empty ./.opschain.environment.properties)
-          if [ $? -eq 0 ]; then
-            echo "INFO: Parsed Environment Properties JSON successfully"
-            until opschain environment set-properties -p ${PROJECT_CODE} -e ${ENV_CODE} -f ./.opschain.environment.properties --confirm; do sleep 1; done
-            rm -f ./.opschain.environment.properties
-          else
-            echo "ERROR: Failed to parse JSON specified in inputs.opschain_environment_properties. Aborting."
-            exit 1
-          fi
         fi
 
     - name: OpsChain-Change-Create
@@ -188,7 +159,11 @@ runs:
           ${OPSCHAIN_METADATA}
         }
         EOF
-        cat ./metadata.json
+        cat ./metadata.json | jq -r '.'
+        if [ $? -ne 0 ]; then
+          echo "ERROR: Failed to generate a valid metadata.json. Aborting."
+          exit 1
+        fi
 
         PROJECT_CODE=${{ steps.bootstrap.outputs.project_code }}
         ENVIRONMENT_CODE=${{ inputs.opschain_environment }}
@@ -197,5 +172,11 @@ runs:
         ENV_CODE=${ENVIRONMENT_CODE_DOWNCASE}
 
         echo "OpsChain Info: $(DEBUG=axios opschain info -o yaml)"
-        opschain change create --project-code ${PROJECT_CODE} --environment-code ${ENV_CODE} --git-remote-name ${{ inputs.opschain_git_remote }} --git-rev ${{inputs.opschain_git_rev}} --action ${{inputs.opschain_action}} --metadata-path ./metadata.json --confirm -f -o yaml
+        opschain change create --project-code ${PROJECT_CODE} \
+                               --environment-code ${ENV_CODE} \
+                               --git-remote-name ${{ inputs.opschain_git_remote }} \
+                               --git-rev ${{inputs.opschain_git_rev}} \
+                               --action ${{inputs.opschain_action}} \
+                               --metadata-path ./metadata.json \
+                               --confirm -f -o yaml
         exit $?
