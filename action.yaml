@@ -1,5 +1,9 @@
 name: opschain change
 description: run an opschain change
+author: 'LimePoint Pty Ltd'
+branding:
+  icon: 'share-2'
+  color: 'green'
 inputs:
   opschain_apiBaseUrl:
     description: OpsChain API Base URL
