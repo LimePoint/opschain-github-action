@@ -6,11 +6,11 @@ This GitHub action can be used to initiate an OpsChain change.
 
 On your GitHub Repository or Organisation, add the following secrets:
 
-OPSCHAIN_URL - The URL with which to access OpsChain
-OPSCHAIN_USERNAME - The user with which to authenticate to OpsChain
-OPSCHAIN_PASSWORD - The user credential with which to authenticate to OpsChain
-OPSCHAIN_GITHUB_USERNAME - The GitHub User with which OpsChain should authenticate to GitHub
-OPSCHAIN_GITHUB_PAT - The GitHub PAT with which OpsChain should authenticate to GitHub
+- `OPSCHAIN_URL` - The URL with which to access OpsChain
+- `OPSCHAIN_USERNAME` - The user with which to authenticate to OpsChain
+- `OPSCHAIN_PASSWORD` - The user credential with which to authenticate to OpsChain
+- `OPSCHAIN_GITHUB_USERNAME` - The GitHub User with which OpsChain should authenticate to GitHub
+- `OPSCHAIN_GITHUB_PAT` - The GitHub PAT with which OpsChain should authenticate to GitHub
 
 ## Usage
 
