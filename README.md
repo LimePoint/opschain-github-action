@@ -17,30 +17,59 @@ OPSCHAIN_GITHUB_PAT - The GitHub PAT with which OpsChain should authenticate to 
 Add a new job in your GitHub Workflow
 
 ```yaml
+name: Verify - OpsChain
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment_code:
+        type: choice
+        description: Choose an environment
+        required: true
+        options:
+          - sandbox
+          - sbxblue
+          - sbxgreen
+
+env:
+  OPSCHAIN_ACTION: print_context
+  OPSCHAIN_PROJECT_NAME: blueprint
+  OPSCHAIN_REMOTE: origin
+
 jobs:
 
   verify-opschain:
     name: Verify OpsChain GitHub Action
+    runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' }}
     timeout-minutes: 60
     environment:
-      name: dev
+      name: ${{ inputs.environment_code }}
     concurrency:
-      group: ${{ github.workflow }}-dev
+      group: ${{ github.workflow }}-${{ inputs.environment_code }}
       cancel-in-progress: false
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install OpsChain CLI
+        run: |
+          mkdir -p /usr/local/bin
+          curl -sSL https://github.com/LimePoint/opschain/releases/download/2023-10-24/opschain-linux -o /usr/local/bin/opschain
+          chmod 755 /usr/local/bin/opschain
+
       - name: Deploy
         uses: limepoint/opschain-github-action@v3
         with:
-          opschain_apiBaseUrl: "https://opschain.limepoint.dev"
+          opschain_apiBaseUrl: ${{ secrets.OPSCHAIN_URL }}
           opschain_username: ${{ secrets.OPSCHAIN_USERNAME }}
           opschain_password: ${{ secrets.OPSCHAIN_PASSWORD }}
-          opschain_project: "demo"
-          opschain_environment: "dev"
-          opschain_git_remote: "origin"
+          opschain_project: ${{ env.OPSCHAIN_PROJECT_NAME }}
+          opschain_environment: ${{ inputs.environment_code }}
+          opschain_git_remote: ${{ env.OPSCHAIN_REMOTE }}
           opschain_git_username: ${{ secrets.OPSCHAIN_GITHUB_USERNAME }}
           opschain_git_password: ${{ secrets.OPSCHAIN_GITHUB_PAT }}
-          opschain_action: "demo:application:deploy"
+          opschain_action: ${{ env.OPSCHAIN_ACTION }}
 ```
 
 The following arguments are supported for this action:
